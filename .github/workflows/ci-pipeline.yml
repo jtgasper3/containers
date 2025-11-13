@@ -12,8 +12,6 @@ on: # rebuild any PRs and main branch changes
 env:
   IMAGE_NAME: jtgasper3/bitnami-openldap
 
-permissions: {}
-
 # Avoid concurrency over the same PR
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
@@ -21,8 +19,6 @@ concurrency:
 jobs:
   build-openldap:
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: read
 
     steps:
       - name: Login to Docker Hub
@@ -52,6 +48,9 @@ jobs:
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
 
       - name: Build and push image
         uses: docker/build-push-action@v6
