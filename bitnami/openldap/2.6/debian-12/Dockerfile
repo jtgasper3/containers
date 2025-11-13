@@ -87,10 +87,9 @@ FROM docker.io/bitnami/minideb:bookworm
 ARG TARGETARCH
 
 LABEL org.opencontainers.image.base.name="docker.io/bitnami/minideb:bookworm" \
-      org.opencontainers.image.created="2025-09-07T02:04:16Z" \
       org.opencontainers.image.description="Application packaged by John Gasper." \
-      org.opencontainers.image.documentation="https://github.com/bitnami/containers/tree/main/bitnami/openldap/README.md" \
-      org.opencontainers.image.source="https://github.com/bitnami/containers/tree/main/bitnami/openldap" \
+      org.opencontainers.image.documentation="https://github.com/jtgasper3/containers/tree/main/bitnami/openldap/README.md" \
+      org.opencontainers.image.source="https://github.com/jtgasper3/containers/tree/main/bitnami/openldap" \
       org.opencontainers.image.title="openldap" \
       org.opencontainers.image.vendor="John Gasper" \
       org.opencontainers.image.version="2.6.10"
@@ -105,7 +104,7 @@ SHELL ["/bin/bash", "-o", "errexit", "-o", "nounset", "-o", "pipefail", "-c"]
 # Install required system packages and dependencies
 RUN install_packages \
     libargon2-1 libcap2-bin libcom-err2 libcrypt1 libgssapi-krb5-2 \
-    libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libltdl7 \
+    libiodbc2 libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libltdl7 \
     libnsl2 libnss3-tools libodbc2 libperl5.36 libsasl2-2 libssl3 \
     libtirpc3 libwrap0 mdbtools procps psmisc
 
