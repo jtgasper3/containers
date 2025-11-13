@@ -1,16 +1,8 @@
 <!-- markdownlint-disable MD041 -->
-<p align="center">
-    <img width="400px" height=auto src="https://dyltqmyl993wv.cloudfront.net/bitnami/bitnami-by-vmware.png" />
-</p>
-
-<p align="center">
-    <a href="https://twitter.com/bitnami"><img src="https://badgen.net/badge/twitter/@bitnami/1DA1F2?icon&label" /></a>
-    <a href="https://github.com/bitnami/containers"><img src="https://badgen.net/github/stars/bitnami/containers?icon=github" /></a>
-    <a href="https://github.com/bitnami/containers"><img src="https://badgen.net/github/forks/bitnami/containers?icon=github" /></a>
-    <a href="https://github.com/bitnami/containers/actions/workflows/ci-pipeline.yml"><img src="https://github.com/bitnami/containers/actions/workflows/ci-pipeline.yml/badge.svg" /></a>
-</p>
 
 # The Bitnami Containers Library
+
+> Note this repo is a fork of the Bitnami container project. This repo focuses on building the **openldap** image in the traditional bitnami openldap compatible way. You can get the prebuilt image from the [Docker Hub Registry](https://hub.docker.com/r/jtgasper3/bitnami-openldap).
 
 Popular applications, provided by [Bitnami](https://bitnami.com), containerized and ready to launch.
 
@@ -27,22 +19,22 @@ Looking to use our applications in production? Try [VMware Tanzu Application Cat
 
 ## Get an image
 
-The recommended way to get any of the Bitnami Images is to pull the prebuilt image from the [Docker Hub Registry](https://hub.docker.com/r/bitnami/).
+The recommended way to get any of the Bitnami Images is to pull the prebuilt image from the [Docker Hub Registry](https://hub.docker.com/r/jtgasper3/bitnami-openldap).
 
 ```console
-docker pull bitnami/APP
+docker pull jtgasper3/bitnami-openldap
 ```
 
 To use a specific version, you can pull a versioned tag.
 
 ```console
-docker pull bitnami/APP:[TAG]
+docker pull jtgasper3/bitnami-openldap:[TAG]
 ```
 
 If you wish, you can also build the image yourself by cloning the repository, changing to the directory containing the Dockerfile, and executing the `docker build` command.
 
 ```console
-git clone https://github.com/bitnami/containers.git
+git clone https://github.com/jtgasper3/containers.git
 cd bitnami/APP/VERSION/OPERATING-SYSTEM
 docker build -t bitnami/APP .
 ```

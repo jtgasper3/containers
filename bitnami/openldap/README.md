@@ -1,4 +1,4 @@
-# Bitnami package for OpenLDAP
+# Bitnami-compatible package for OpenLDAP
 
 ## What is OpenLDAP?
 
