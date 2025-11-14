@@ -102,11 +102,11 @@ ENV HOME="/" \
 COPY prebuildfs /
 SHELL ["/bin/bash", "-o", "errexit", "-o", "nounset", "-o", "pipefail", "-c"]
 # Install required system packages and dependencies
-RUN install_packages \
+RUN install_packages ca-certificates \
     libargon2-1 libcap2-bin libcom-err2 libcrypt1 libgssapi-krb5-2 \
     libiodbc2 libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libltdl7 \
     libnsl2 libnss3-tools libodbc2 libperl5.36 libsasl2-2 libssl3 \
-    libtirpc3 libwrap0 mdbtools procps psmisc
+    libtirpc3 libwrap0 mdbtools procps psmisc 
 
 # Copy built OpenLDAP from builder
 COPY --from=builder /opt/bitnami/openldap /opt/bitnami/openldap
