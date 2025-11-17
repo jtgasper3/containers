@@ -110,6 +110,7 @@ RUN rm -rf /opt/bitnami/openldap/share/man/ && \
   # Stage 2: Bitnami image
 FROM docker.io/bitnami/minideb:bookworm
 
+ARG OPENLDAP_VERSION=2.6.10
 ARG TARGETARCH
 
 LABEL org.opencontainers.image.base.name="docker.io/bitnami/minideb:bookworm" \
@@ -118,7 +119,7 @@ LABEL org.opencontainers.image.base.name="docker.io/bitnami/minideb:bookworm" \
       org.opencontainers.image.source="https://github.com/jtgasper3/containers/tree/main/bitnami/openldap" \
       org.opencontainers.image.title="openldap" \
       org.opencontainers.image.vendor="John Gasper" \
-      org.opencontainers.image.version="2.6.10"
+      org.opencontainers.image.version="${OPENLDAP_VERSION}"
 
 ENV HOME="/" \
     OS_ARCH="${TARGETARCH:-amd64}" \
@@ -145,9 +146,8 @@ RUN find / -perm /6000 -type f -exec chmod a-s {} \; || true
 COPY rootfs/ /
 RUN /opt/bitnami/scripts/openldap/postunpack.sh
 
-ENV APP_VERSION="2.6.10" \
+ENV APP_VERSION="${OPENLDAP_VERSION}" \
     BITNAMI_APP_NAME="openldap" \
-    IMAGE_REVISION="5" \
     PATH="/opt/bitnami/openldap/bin:/opt/bitnami/openldap/sbin:$PATH"
 
 EXPOSE 1389 1636

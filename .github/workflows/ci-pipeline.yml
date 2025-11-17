@@ -68,6 +68,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: bitnami/openldap/2.6/debian-12
+          build-args: OPENLDAP_VERSION=2.6.10
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
           tags: ${{ env.IMAGE_NAME }}
