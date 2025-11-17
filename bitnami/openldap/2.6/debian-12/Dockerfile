@@ -5,6 +5,8 @@
 FROM debian:bookworm AS builder
 
 ARG OPENLDAP_VERSION=2.6.10
+ARG OPENLDAP_BASE_URL=https://www.openldap.org/software/download/OpenLDAP/openldap-release
+ARG OPENLDAP_FPR="3CE269B5398BC8B785645E987F67D5FD1CE1CBCE412F52FD9208835BA9409A48D4029093A6A9B145"
 
 RUN apt update
 RUN apt install -y \
@@ -14,6 +16,7 @@ RUN apt install -y \
     build-essential \
     ca-certificates \
     flex \
+    gpg \
     groff \
     libtool \
     pkg-config \
@@ -31,8 +34,31 @@ RUN apt install -y \
 #  Try the above with --no-install-recommends
 WORKDIR /build/openldap
 
-RUN wget https://www.openldap.org/software/download/OpenLDAP/openldap-release/openldap-${OPENLDAP_VERSION}.tgz && \
-    tar -xzf openldap-${OPENLDAP_VERSION}.tgz --strip-components=1 && \
+RUN set -eux; \
+    TARBALL="openldap-${OPENLDAP_VERSION}.tgz"; \
+    SIGFILE="${TARBALL}.asc"; \
+    wget -O openldap-gpg-pubkey.txt "https://www.openldap.org/software/download/OpenLDAP/gpg-pubkey.txt"; \
+    wget -O "${TARBALL}"  "${OPENLDAP_BASE_URL}/${TARBALL}"; \
+    wget -O "${SIGFILE}"  "${OPENLDAP_BASE_URL}/${TARBALL}.asc" || \
+    (echo "Signature file not found alongside tarball." >&2; exit 1)
+
+RUN set -eux; \ 
+    export GNUPGHOME="$(mktemp -d)"; \
+    gpg --batch --import openldap-gpg-pubkey.txt; \
+    echo "Imported keys:"; gpg --batch --list-keys; \
+    \
+    FPR_NORMALIZED="$(echo "${OPENLDAP_FPR}" | tr -d '[:space:]')"; \
+    KEY_FPRS="$(gpg --batch --with-colons --fingerprint | awk -F: '/^fpr:/ {print $10}' | tr -d '[:space:]')"; \
+    echo "Configured FPR: ${FPR_NORMALIZED}"; \
+    echo "Available FPRs: ${KEY_FPRS}"; \
+    echo "${KEY_FPRS}" | grep -qi "${FPR_NORMALIZED}" || { \
+        echo "ERROR: Imported key does not match the expected fingerprint." >&2; \
+        exit 2; \
+    }; \
+    \
+    gpg --batch --verify "openldap-${OPENLDAP_VERSION}.tgz.asc" "openldap-${OPENLDAP_VERSION}.tgz";
+
+RUN tar -xzf openldap-${OPENLDAP_VERSION}.tgz --strip-components=1 && \
     rm openldap-${OPENLDAP_VERSION}.tgz
 
 # Configure with Bitnami-style layout
