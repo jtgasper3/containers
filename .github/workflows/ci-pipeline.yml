@@ -11,8 +11,9 @@ on: # rebuild any PRs and main branch changes
 
 env:
   IMAGE_NAME: jtgasper3/bitnami-openldap
+  LATEST_OPENLDAP_VERSION: 2.6.11
 
-# Avoid concurrency over the same PR
+# Avoid concurrency over the same PR
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
 
@@ -24,10 +25,22 @@ jobs:
         include:
           # AMD64 build on standard Ubuntu runners
           - platform: linux/amd64
-            label: ubuntu-24.04         # or ubuntu-latest
+            label: ubuntu-24.04
+            openldap_version: 2.6.10
+            openldap_minor: 2.6
+          - platform: linux/amd64
+            label: ubuntu-24.04
+            openldap_version: 2.6.12
+            openldap_minor: 2.6
           # ARM64 build on native Arm runner
           - platform: linux/arm64
-            label: ubuntu-24.04-arm     # native Arm runner label
+            label: ubuntu-24.04-arm
+            openldap_version: 2.6.10
+            openldap_minor: 2.6
+          - platform: linux/arm64
+            label: ubuntu-24.04-arm
+            openldap_version: 2.6.12
+            openldap_minor: 2.6
     runs-on: ${{ matrix.label }}
     
     steps:
@@ -63,8 +76,8 @@ jobs:
         id: build
         uses: docker/build-push-action@v6
         with:
-          context: bitnami/openldap/2.6/debian-12
-          build-args: OPENLDAP_VERSION=2.6.10
+          context: bitnami/openldap/${{ matrix.openldap_minor }}/debian-12
+          build-args: OPENLDAP_VERSION=${{ matrix.openldap_version }}
           pull: true
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -83,7 +96,7 @@ jobs:
       - name: Upload digest
         uses: actions/upload-artifact@v4
         with:
-          name: digests-${{ matrix.label }}
+          name: digests-${{ matrix.openldap_version }}-${{ matrix.label }}
           path: ${{ runner.temp }}/digests/*
           if-no-files-found: error
           retention-days: 1
@@ -92,12 +105,16 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build
+    strategy:
+      fail-fast: false
+      matrix:
+        openldap_version: [2.6.10, 2.6.12]
     steps:
       - name: Download digests
         uses: actions/download-artifact@v4
         with:
           path: ${{ runner.temp }}/digests
-          pattern: digests-*
+          pattern: digests-${{ matrix.openldap_version }}-*
           merge-multiple: true
 
       - name: Login to Docker Hub
@@ -115,13 +132,13 @@ jobs:
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable={{is_default_branch}}${{ matrix.openldap_version == env.LATEST_OPENLDAP_VERSION && ' && true' || ' && false' }}
             type=ref,event=branch,enable=${{ github.ref != format('refs/heads/{0}', 'main') }}
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=2.6
-            type=raw,value=2.6.10
+            type=raw,value=2.6,enable=${{ matrix.openldap_version == env.LATEST_OPENLDAP_VERSION }}
+            type=raw,value=${{ matrix.openldap_version }}
 
       - name: Create manifest list and push
         working-directory: ${{ runner.temp }}/digests
