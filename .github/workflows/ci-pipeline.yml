@@ -11,7 +11,7 @@ on: # rebuild any PRs and main branch changes
 
 env:
   IMAGE_NAME: jtgasper3/bitnami-openldap
-  LATEST_OPENLDAP_VERSION: 2.6.11
+  LATEST_OPENLDAP_VERSION: 2.6.13
 
 # Avoid concurrency over the same PR
 concurrency:
@@ -32,6 +32,10 @@ jobs:
             label: ubuntu-24.04
             openldap_version: 2.6.12
             openldap_minor: 2.6
+          - platform: linux/amd64
+            label: ubuntu-24.04
+            openldap_version: 2.6.13
+            openldap_minor: 2.6
           # ARM64 build on native Arm runner
           - platform: linux/arm64
             label: ubuntu-24.04-arm
@@ -40,6 +44,10 @@ jobs:
           - platform: linux/arm64
             label: ubuntu-24.04-arm
             openldap_version: 2.6.12
+            openldap_minor: 2.6
+          - platform: linux/arm64
+            label: ubuntu-24.04-arm
+            openldap_version: 2.6.13
             openldap_minor: 2.6
     runs-on: ${{ matrix.label }}
     
@@ -108,7 +116,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        openldap_version: [2.6.10, 2.6.12]
+        openldap_version: [2.6.10, 2.6.12, 2.6.13]
     steps:
       - name: Download digests
         uses: actions/download-artifact@v4
