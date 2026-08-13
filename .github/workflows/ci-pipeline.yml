@@ -13,7 +13,9 @@ on: # rebuild any PRs and main branch changes
 
 env:
   IMAGE_NAME: jtgasper3/bitnami-openldap
-  LATEST_OPENLDAP_VERSION: 2.6.13
+  LATEST_OPENLDAP_VERSION: 2.6.14
+  # Debian flavour whose images own the unsuffixed tags (latest, 2.6, x.y.z)
+  DEFAULT_FLAVOUR: debian-12
 
 # Avoid concurrency over the same PR
 concurrency:
@@ -24,33 +26,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        openldap_version: [2.6.13, 2.6.14]
+        flavour: [debian-12, debian-13]
+        platform: [linux/amd64, linux/arm64]
         include:
-          # AMD64 build on standard Ubuntu runners
+          # AMD64 builds on standard Ubuntu runners
           - platform: linux/amd64
             label: ubuntu-24.04
-            openldap_version: 2.6.10
-            openldap_minor: 2.6
-          - platform: linux/amd64
-            label: ubuntu-24.04
-            openldap_version: 2.6.12
-            openldap_minor: 2.6
-          - platform: linux/amd64
-            label: ubuntu-24.04
-            openldap_version: 2.6.13
-            openldap_minor: 2.6
-          # ARM64 build on native Arm runner
+          # ARM64 builds on native Arm runners
           - platform: linux/arm64
             label: ubuntu-24.04-arm
-            openldap_version: 2.6.10
-            openldap_minor: 2.6
-          - platform: linux/arm64
-            label: ubuntu-24.04-arm
-            openldap_version: 2.6.12
-            openldap_minor: 2.6
-          - platform: linux/arm64
-            label: ubuntu-24.04-arm
-            openldap_version: 2.6.13
-            openldap_minor: 2.6
     runs-on: ${{ matrix.label }}
     
     steps:
@@ -86,7 +71,7 @@ jobs:
         id: build
         uses: docker/build-push-action@v6
         with:
-          context: bitnami/openldap/${{ matrix.openldap_minor }}/debian-12
+          context: bitnami/openldap/2.6/${{ matrix.flavour }}
           build-args: OPENLDAP_VERSION=${{ matrix.openldap_version }}
           pull: true
           platforms: ${{ matrix.platform }}
@@ -106,7 +91,7 @@ jobs:
       - name: Upload digest
         uses: actions/upload-artifact@v4
         with:
-          name: digests-${{ matrix.openldap_version }}-${{ matrix.label }}
+          name: digests-${{ matrix.openldap_version }}-${{ matrix.flavour }}-${{ matrix.label }}
           path: ${{ runner.temp }}/digests/*
           if-no-files-found: error
           retention-days: 1
@@ -118,13 +103,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        openldap_version: [2.6.10, 2.6.12, 2.6.13]
+        openldap_version: [2.6.13, 2.6.14]
+        flavour: [debian-12, debian-13]
     steps:
       - name: Download digests
         uses: actions/download-artifact@v4
         with:
           path: ${{ runner.temp }}/digests
-          pattern: digests-${{ matrix.openldap_version }}-*
+          pattern: digests-${{ matrix.openldap_version }}-${{ matrix.flavour }}-*
           merge-multiple: true
 
       - name: Login to Docker Hub
@@ -142,13 +128,15 @@ jobs:
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest,enable=${{ matrix.openldap_version == env.LATEST_OPENLDAP_VERSION && '{{is_default_branch}}' || 'false' }}
-            type=ref,event=branch,enable=${{ github.ref != format('refs/heads/{0}', 'main') }}
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=2.6,enable=${{ matrix.openldap_version == env.LATEST_OPENLDAP_VERSION }}
-            type=raw,value=${{ matrix.openldap_version }}
+            # Flavour-suffixed tags are published for every Debian flavour
+            type=raw,value=${{ matrix.openldap_version }}-${{ matrix.flavour }}
+            type=raw,value=2.6-${{ matrix.flavour }},enable=${{ matrix.openldap_version == env.LATEST_OPENLDAP_VERSION }}
+            type=ref,event=branch,enable=${{ github.ref != format('refs/heads/{0}', 'main') }},suffix=-${{ matrix.flavour }}
+            type=ref,event=pr,suffix=-${{ matrix.flavour }}
+            # Unsuffixed tags are published only for the default flavour
+            type=raw,value=${{ matrix.openldap_version }},enable=${{ matrix.flavour == env.DEFAULT_FLAVOUR }}
+            type=raw,value=2.6,enable=${{ matrix.flavour == env.DEFAULT_FLAVOUR && matrix.openldap_version == env.LATEST_OPENLDAP_VERSION }}
+            type=raw,value=latest,enable=${{ matrix.flavour == env.DEFAULT_FLAVOUR && matrix.openldap_version == env.LATEST_OPENLDAP_VERSION && '{{is_default_branch}}' || 'false' }}
 
       - name: Create manifest list and push
         working-directory: ${{ runner.temp }}/digests
