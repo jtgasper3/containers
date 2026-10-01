@@ -103,7 +103,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        openldap_version: [2.6.13, 2.6.14]
+        openldap_version: [2.6.13, 2.6.14, 2.6.15]
         flavour: [debian-12, debian-13]
     steps:
       - name: Download digests
